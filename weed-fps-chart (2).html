@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weed & Arc Raiders PvP</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #080b0f;
+    color: #c8d0e0;
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    padding: 36px 20px;
+  }
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 99;
+    background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
+  }
+
+  header { text-align: center; margin-bottom: 28px; }
+  .logo { font-size: 10px; font-family: 'Share Tech Mono', monospace; color: #3a4555; letter-spacing: 3px; margin-bottom: 8px; }
+
+  h1 { font-size: clamp(24px, 5vw, 42px); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #fff; line-height:1.1; }
+  h1 .accent { color: #e8630a; }
+  .sub { font-size: 13px; font-family: 'Share Tech Mono', monospace; color: #4a5565; margin-top: 6px; letter-spacing: 1px; }
+
+  .verdict {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: rgba(232,99,10,0.1); border: 1px solid rgba(232,99,10,0.4);
+    border-radius: 4px; padding: 11px 20px; margin: 0 auto 32px; max-width: 600px;
+    font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px; color: #e8630a;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #e8630a; animation: pulse 1.2s ease infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+  .wrap {
+    max-width: 700px; margin: 0 auto 24px;
+    background: #0e1117; border: 1px solid #1a2030; border-radius: 6px; padding: 22px 26px;
+  }
+
+  .section-label {
+    font-size: 10px; font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 2px; color: #3a4555; margin-bottom: 18px; text-transform: uppercase;
+  }
+
+  .legend { display: flex; gap: 18px; margin-bottom: 20px; font-size: 12px; font-family: 'Share Tech Mono', monospace; }
+  .li { display: flex; align-items: center; gap: 6px; }
+  .lsq { width: 9px; height: 9px; border-radius: 2px; }
+  .ls { background: #2299dd; }
+  .lh { background: #dd3355; }
+
+  .row { margin-bottom: 15px; }
+  .row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .row-name { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+  .row-why { font-size: 11px; font-family: 'Share Tech Mono', monospace; color: #5a6575; }
+
+  .tag { font-size: 10px; font-family: 'Share Tech Mono', monospace; padding: 1px 6px; border-radius: 2px; }
+  .tag.r { background: rgba(221,51,85,0.15); color: #dd3355; border: 1px solid rgba(221,51,85,0.3); }
+  .tag.y { background: rgba(255,200,0,0.1); color: #ffc800; border: 1px solid rgba(255,200,0,0.3); }
+  .tag.g { background: rgba(0,220,120,0.1); color: #00dc78; border: 1px solid rgba(0,220,120,0.3); }
+
+  .bars { display: flex; flex-direction: column; gap: 3px; }
+  .br { display: flex; align-items: center; gap: 8px; }
+  .bn { font-family: 'Share Tech Mono', monospace; font-size: 10px; width: 42px; color: #3a4555; }
+  .track { flex: 1; height: 20px; background: #141820; border-radius: 2px; overflow: hidden; }
+  .fill {
+    height: 100%; border-radius: 2px; display: flex; align-items: center;
+    padding: 0 8px; font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    animation: grow 1.1s cubic-bezier(0.16,1,0.3,1) both; transform-origin: left; white-space: nowrap;
+  }
+  @keyframes grow { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+  .fs { background: rgba(34,153,221,0.2); border: 1px solid rgba(34,153,221,0.4); color: #2299dd; }
+  .fh { background: rgba(221,51,85,0.18); border: 1px solid rgba(221,51,85,0.4); color: #dd3355; }
+  .fhg { background: rgba(0,220,120,0.12); border: 1px solid rgba(0,220,120,0.4); color: #00dc78; }
+
+  /* Conclusion */
+  .conclusion {
+    max-width: 700px; margin: 0 auto;
+    background: #0e1117; border: 1px solid #1a2030; border-top: 2px solid #ffc800;
+    border-radius: 6px; padding: 22px 26px;
+  }
+  .conc-label { font-size: 10px; font-family: 'Share Tech Mono', monospace; letter-spacing: 2px; color: #ffc800; margin-bottom: 12px; text-transform: uppercase; }
+  .conc-text { font-size: 16px; font-weight: 600; line-height: 1.7; color: #c8d0e0; }
+  .conc-text .r { color: #dd3355; }
+  .conc-text .g { color: #00dc78; }
+  .conc-text .y { color: #ffc800; }
+  .note { margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #2a3040; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<header>
+  <div class="logo">// arc raiders · pvp performance report</div>
+  <h1>Smoking Weed &amp;<br><span class="accent">Arc Raiders</span> PvP</h1>
+  <div class="sub">SOBER vs HIGH — does it cost you your loot?</div>
+</header>
+
+<div class="verdict">
+  <div class="dot"></div>
+  VERDICT: HIGH = DEAD RAIDER, DEAD LOOT
+  <div class="dot"></div>
+</div>
+
+<div class="wrap">
+  <div class="section-label">// key pvp metrics — sober vs. high (0–100)</div>
+  <div class="legend">
+    <div class="li"><div class="lsq ls"></div>SOBER</div>
+    <div class="li"><div class="lsq lh"></div>HIGH</div>
+  </div>
+
+  <!-- First-shot reaction -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">First-Shot Reaction</span>
+      <span class="tag r">−20% SLOWER</span>
+    </div>
+    <div class="row-why">Arc Raiders TTK is brutal — who shoots first almost always wins</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:90%">90</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fh" style="width:68%; animation-delay:.05s">68</div></div></div>
+    </div>
+  </div>
+
+  <!-- Camera angle / 3rd person peeks -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">3rd-Person Peek Timing</span>
+      <span class="tag r">IMPAIRED</span>
+    </div>
+    <div class="row-why">Shoulder-switching & corner peeks demand sharp spatial tracking</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:85%; animation-delay:.1s">85</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fh" style="width:58%; animation-delay:.15s">58</div></div></div>
+    </div>
+  </div>
+
+  <!-- Slide-roll movement -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">Slide → Roll Combos</span>
+      <span class="tag r">IMPAIRED</span>
+    </div>
+    <div class="row-why">Timing the slide-shot-roll window requires fine motor coordination</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:83%; animation-delay:.2s">83</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fh" style="width:57%; animation-delay:.25s">57</div></div></div>
+    </div>
+  </div>
+
+  <!-- Situational awareness (ARC + raiders) -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">Tracking Raiders + ARC</span>
+      <span class="tag r">−30% WORSE</span>
+    </div>
+    <div class="row-why">You must monitor enemy players AND ARC machines simultaneously</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:82%; animation-delay:.3s">82</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fh" style="width:54%; animation-delay:.35s">54</div></div></div>
+    </div>
+  </div>
+
+  <!-- Third-party awareness -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">Third-Party Awareness</span>
+      <span class="tag r">IMPAIRED</span>
+    </div>
+    <div class="row-why">Hearing gunfire & pushing before they heal is core Arc Raiders meta</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:80%; animation-delay:.4s">80</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fh" style="width:52%; animation-delay:.45s">52</div></div></div>
+    </div>
+  </div>
+
+  <!-- Headshot discipline -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">Headshot Discipline</span>
+      <span class="tag r">−23% WORSE</span>
+    </div>
+    <div class="row-why">One headshot can flip a fight — high aim sloppiness at high TTK moments</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:84%; animation-delay:.5s">84</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fh" style="width:62%; animation-delay:.55s">62</div></div></div>
+    </div>
+  </div>
+
+  <!-- Grenade / util timing -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">Grenade / Util Timing</span>
+      <span class="tag r">IMPAIRED</span>
+    </div>
+    <div class="row-why">Grenades win fights in Arc — delayed decision-making wastes them</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:80%; animation-delay:.6s">80</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fh" style="width:55%; animation-delay:.65s">55</div></div></div>
+    </div>
+  </div>
+
+  <!-- Loot risk tolerance (tilt) -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">Tilt When Losing Gear</span>
+      <span class="tag y">MIXED</span>
+    </div>
+    <div class="row-why">Weed may reduce panic from losing a high-value loadout... or may not</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:60%; animation-delay:.7s">60</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fhg" style="width:67%; animation-delay:.75s">67</div></div></div>
+    </div>
+  </div>
+
+  <!-- Chill / enjoyment -->
+  <div class="row">
+    <div class="row-top">
+      <span class="row-name">Session Enjoyment</span>
+      <span class="tag g">HIGHER</span>
+    </div>
+    <div class="row-why">More fun... right up until you lose your best loadout to a sober squad</div>
+    <div class="bars">
+      <div class="br"><span class="bn">SOBER</span><div class="track"><div class="fill fs" style="width:65%; animation-delay:.8s">65</div></div></div>
+      <div class="br"><span class="bn">HIGH</span><div class="track"><div class="fill fhg" style="width:82%; animation-delay:.85s">82</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONCLUSION -->
+<div class="conclusion">
+  <div class="conc-label">// arc raiders verdict</div>
+  <p class="conc-text">
+    Arc Raiders PvP <span class="r">punishes impairment harder than most shooters</span> — the short TTK means whoever shoots first wins, third-person peeks require precise timing, and you're constantly juggling ARC threats <em>and</em> enemy raiders at once. Weed tanks all of those. <span class="y">The one argument for it</span> is staying calm when your expensive loadout is on the line — but that calm won't save you when a sober squad one-taps you from a shoulder peek before you even process they're there. <span class="r">Play sober if you care about your gear.</span>
+  </p>
+  <div class="note">* individual results vary by tolerance & dose. some habitual users report no subjective impairment — measurable reaction time deficits still occur regardless.</div>
+</div>
+
+</body>
+</html>
